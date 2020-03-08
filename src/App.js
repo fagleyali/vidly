@@ -4,6 +4,7 @@ import Movies from "./components/movies";
 import Pagination from "./components/pagination";
 import Genre from "./components/genres";
 import Paginate from "./utils/paginate";
+import _ from 'lodash';
 import "./App.css";
 
 function App() {
@@ -11,7 +12,8 @@ function App() {
     movies: getMovies(),
     pages: 4,
     currentPage: 1,
-    currentGenre: "1"
+    currentGenre: "1",
+    sortColumn: {col:'title', order:'asc'}
   };
 
   const [state, setState] = useState(initialState);
@@ -30,11 +32,19 @@ function App() {
     setState({ ...state, currentPage: e });
   };
 
+  const handleSort = (sortColumn) => {
+    setState({...state, sortColumn})
+    console.log(state.sortColumn)
+  }
+
   const filtered =
     state.currentGenre === "1"
       ? state.movies
       : state.movies.filter(m => m.genre._id === state.currentGenre);
-  const movies = Paginate(filtered, state.currentPage, state.pages);
+  
+  const sorted = _.orderBy(filtered, [state.sortColumn.col], [state.sortColumn.order])
+      
+  const movies = Paginate(sorted, state.currentPage, state.pages);
 
   const handleGenre = selection => {
     setState({ ...state, currentGenre: selection, currentPage: 1 });
@@ -50,6 +60,8 @@ function App() {
           totalMovies={filtered.length}
           onDelete={handleDelete}
           movies={movies}
+          onSort={handleSort}
+          sortColumn={state.sortColumn}
         />
         <Pagination
           onSelect={handleSelect}
